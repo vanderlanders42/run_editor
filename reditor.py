@@ -1,9 +1,10 @@
 # coding: utf8
-#REditor (Run Editor) Version 1.42
-#Copyright 2017,2018 Red Ponies A.F.
+#REditor (Run Editor) Version 1.50
+#Copyright 2017,2018 Vladimir Vanderlanders, REDPONIES A.F.
 
 from sys import argv
 from sys import exit
+from colorama import Fore, Back, Style, init
 
 """
  This program is free software; you can redistribute it and/or modify
@@ -16,14 +17,17 @@ from sys import exit
  MERCHANTABILITY or FITNESS FOR A  PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 """
-
+init()
 #Definition internes
 
 def txtopen(file):
     #Variable globale pour le nom du fichier.
     global fileref
     fileref = file
-    print ("-----Run Editor - Version 1.42--------------------------------------------------\n" + "File : " + file)
+    
+    print (Fore.BLACK + Back.WHITE + "         Run Editor - Version 1.50         " + Style.RESET_ALL)
+    print("File : " + file)
+    
     text = open(file, 'r', encoding="utf-8")
     #Variable globale contenant via une liste le texte.
     global content
@@ -32,7 +36,10 @@ def txtopen(file):
     ref_content = content
     text.close()
     numl = lines()
-    print ("Lines : " + str(numl) + "\nUse 'help' for a list of all commands." + "\n--------------------------------------------------------------------------------\n")
+    
+    print ("Lines : " + str(numl) + "\nUse 'help' for a list of all commands.")
+    print (Fore.BLACK + Back.WHITE + "                                           " + Style.RESET_ALL + "\n")
+    
     listing()
     prompt()
 
@@ -49,7 +56,7 @@ def prompt():
             dico[command]()
         prompt()
     else:
-        print("Syntax error\n")
+        print(Fore.RED + "Syntax error\n" + Style.RESET_ALL)
         prompt()
 
 def lines():
@@ -65,8 +72,10 @@ def listing():
     #Affiche chaque ligne du fichier, avec son numéro.
     nbrl = 1
     for line in content:
-        print (str(nbrl) + " " + line)
+        line = line.split('\n')[0]
+        print (Fore.BLACK + Back.CYAN + str(nbrl) + Style.RESET_ALL + line)
         nbrl = nbrl + 1
+    print ('\n')
 
 def add(txt):
     #Lineused doit préalablement être défini par gotoline().
@@ -92,56 +101,9 @@ def insert(txt):
 def edit(n):
     gotoline(n)
     delete(n)
-    txt = input("EDIT " + n + " >")
+    print(Fore.BLACK + Back.GREEN + "EDIT " + n + " :" + Style.RESET_ALL)
+    txt = input()
     insert(txt)
-
-#DEFINITIONS DE CRYPTAGE NECESSITANT MIOLIB ET MIOLIB2
-def code(n):
-    import miolib
-    gotoline(n, 1)
-    delete(n)
-    txt = miolib.encrypt(lineused)
-    insert(txt)
-	
-def decode(n):
-    import miolib
-    gotoline(n, 1)
-    delete(n)
-    txt = miolib.decrypt(lineused)
-    insert(txt)
-
-def code2(n):
-    import miolib2
-    gotoline(n, 1)
-    delete(n)
-    txt = miolib2.encrypt(lineused)
-    insert(txt)
-	
-def decode2(n):
-    import miolib2
-    gotoline(n, 1)
-    delete(n)
-    txt = miolib2.decrypt(lineused)
-    insert(txt)
-
-def codeall(p=1):
-    nbrl = 1
-    for line in content:
-        if p==1:
-            code(nbrl)
-        else:
-            code2(nbrl)
-        nbrl = nbrl + 1
-	
-def decodeall(p=1):
-    nbrl = 1
-    for line in content:
-        if p==1:
-            decode(nbrl)
-        else:
-            decode2(nbrl)
-        nbrl = nbrl + 1
-#FIN DES DEFINITIONS DE CRYPTAGE
 	
 def lol(n):
     #Truc TOTALEMENT inutile, mais à fort potentiel de conneries.
@@ -184,12 +146,15 @@ def gotoline(n,p=0):
     nlineused = n
 
 def savefile():
-    sv = open(fileref, "r+", encoding="utf-8")
-    sv.seek(0)
-    sv.truncate()
-    for line in content:
-        sv.write("%s" % line)
-    sv.close
+    if fichier_choisi == True :
+        sv = open(fileref, "r+", encoding="utf-8")
+        sv.seek(0)
+        sv.truncate()
+        for line in content:
+            sv.write("%s" % line)
+        sv.close
+    else :
+        nom_save = input("Name of the file ?")
 
 def savecopy(sfile):
     #Crée le fichier
@@ -217,17 +182,20 @@ def jeanne():
     print("ins [text]: Insert text to this line")
     print("del [line number]: Delete line")
     print("\n-Misc.:\n")
-    print("encode/decode [line number]: Encode or decode line with MIO I method.")
-    print("encodeall/decodeall [1(default)/2]: Encode or decode the whole file with MIO I or MIO II method.")
     print("lol [0/1]: For AbiWord files ONLY, do mess with them if lol 1 used, restore with lol 0")
 
-dico = {'list':listing, 'add':add, 'lol':lol, 'exit':cassohtoa, 'line':gotoline, 'save':savefile, 'del':delete, 'ins':insert, 'edit':edit, 'encode':code, 'decode':decode, 'encodeall':codeall, 'decodeall':decodeall, 'help':jeanne, 'saveas':savecopy}
+dico = {'list':listing, 'add':add, 'lol':lol, 'exit':cassohtoa, 'line':gotoline, 'save':savefile, 'del':delete, 'ins':insert, 'edit':edit, 'help':jeanne, 'saveas':savecopy}
 
 #Execution
 if len(argv) == 1:
-    filetoopen = input("File to open :")
+    print(Fore.YELLOW + "WARNING: No file selected ! Starting with none." + Style.RESET_ALL)
+    fichier_choisi = False
+    filetoopen = "dummy"
+    cr = open("dummy", "a")
+    cr.close()
     txtopen(filetoopen)
 elif len(argv) == 2:
+    fichier_choisi = True
     filetoopen = argv[1]
     txtopen(filetoopen)
 else:
